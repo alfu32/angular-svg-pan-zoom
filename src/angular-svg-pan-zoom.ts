@@ -30,17 +30,25 @@ module AngularSvgPanZoom {
         }
 
         link = ($scope:ng.IScope, $element:ng.IRootElementService, $attrs:ISvgPanZoomAttributes) => {
+                var svgmx=$element[0];
+                var instance=null;
             var bZoom = (scale) => {
                 this.$rootScope.$broadcast("beforeZoom", scale);
             };
             var oZoom = (scale) => {
                 this.$rootScope.$broadcast("onZoom", scale);
+                var tx=svgmx.children[0].transform.baseVal[0].matrix
+                var mx=[tx.a,tx.b,tx.c,tx.d,tx.e,tx.f];
+                this.$rootScope.$broadcast("svgUpdateMatrix", mx);
             };
             var bPan = (point) => {
                 this.$rootScope.$broadcast("beforePan", point);
             };
             var oPan = (point) => {
                 this.$rootScope.$broadcast('onPan', point);
+                var tx=svgmx.children[0].transform.baseVal[0].matrix
+                var mx=[tx.a,tx.b,tx.c,tx.d,tx.e,tx.f];
+                this.$rootScope.$broadcast("svgUpdateMatrix", mx);
             };
             var panEnabled = this.CheckForBoolean($attrs.panEnabled, true),
                 controlIconEnabled = this.CheckForBoolean($attrs.controlIconsEnabled, false),
@@ -71,7 +79,17 @@ module AngularSvgPanZoom {
                 beforeZoom: beforeZoom,
                 onZoom: onZoom,
                 beforePan: beforePan,
-                onPan: onPan
+                onPan: onPan,
+                customEventsHandler:{
+                    init:function(data){
+                        //console.log("init",data.instance);
+                        instance=data.instance;
+                        data.instance.zoom(10);
+                    },
+                    destroy:function(data){
+                        //console.log("destroy",arguments);
+                    }
+                }
             });
         }
 
